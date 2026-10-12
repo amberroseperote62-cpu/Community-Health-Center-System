@@ -2,11 +2,11 @@
 
 [![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/Tests-Passing-success?style=for-the-badge&logo=githubactions&logoColor=white)](#testing)
+[![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
+[![Tests](https://img.shields.io/badge/Tests-59%20Passing-success?style=for-the-badge&logo=githubactions&logoColor=white)](#-testing--quality-assurance)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-A web-based clinical management and health information system designed for community clinics, barangay health centers, and primary healthcare units. The system streamlines patient record keeping, healthcare staff management, appointment scheduling, medical consultations, and medicine inventory tracking.
+A web-based clinical management and health information system designed for community clinics, barangay health centers, and primary healthcare units. Built with **Laravel 12** and styled using **Bootstrap 5 via CDN**, following academic project requirements.
 
 ---
 
@@ -61,7 +61,7 @@ The **Community Health Center System** eliminates paper-based bottlenecks in loc
 ### 5. 🩺 Consultations & Electronic Prescriptions
 - **Clinical Encounter Logging**: Records symptoms, clinical diagnosis, and detailed treatment notes.
 - **Flexible Workflow**: Supports consultations tied to scheduled appointments as well as walk-in visits.
-- **Integrated Prescription Dispensing**: Prescribe multiple medicines per consultation with precise dosage instructions (e.g., *"1 tablet 3x daily for 7 days"*).
+- **Direct Prescription Dispensing**: Directly prescribes inventory medicines with dosage instructions (e.g., *"1 tablet 3x daily for 7 days"*).
 - **Atomic Stock Deduction**: Automatically deducts dispensed quantities from pharmacy inventory within an atomic database transaction.
 
 ### 6. 💊 Pharmacy & Medicine Inventory Control
@@ -78,18 +78,10 @@ The **Community Health Center System** eliminates paper-based bottlenecks in loc
 
 ## 🏛️ System Architecture & Database Schema
 
-The relational database links patients, healthcare providers, clinical encounters, and pharmaceutical inventory:
+The relational database implements **exactly five (5) related domain tables**:
 
 ```mermaid
 erDiagram
-    USERS {
-        bigint id PK
-        string name
-        string email
-        string role "admin | staff"
-        string password
-    }
-
     PATIENTS {
         bigint id PK
         string first_name
@@ -123,17 +115,6 @@ erDiagram
         enum status "pending | confirmed | completed | cancelled"
     }
 
-    CONSULTATIONS {
-        bigint id PK
-        bigint appointment_id FK "nullable"
-        bigint patient_id FK
-        bigint health_worker_id FK
-        date consultation_date
-        text symptoms
-        text diagnosis
-        text treatment_notes
-    }
-
     MEDICINES {
         bigint id PK
         string name
@@ -145,34 +126,43 @@ erDiagram
         date expiry_date
     }
 
-    CONSULTATION_MEDICINE {
+    CONSULTATIONS {
         bigint id PK
-        bigint consultation_id FK
-        bigint medicine_id FK
-        integer quantity
-        string dosage_instructions
+        bigint appointment_id FK "nullable"
+        bigint patient_id FK
+        bigint health_worker_id FK
+        bigint medicine_id FK "nullable"
+        integer prescribed_quantity "nullable"
+        string dosage_instructions "nullable"
+        date consultation_date
+        text symptoms
+        text diagnosis
+        text treatment_notes
     }
 
-    PATIENTS ||--o{ APPOINTMENTS : schedules
-    HEALTH_WORKERS ||--o{ APPOINTMENTS : attends
-    PATIENTS ||--o{ CONSULTATIONS : receives
-    HEALTH_WORKERS ||--o{ CONSULTATIONS : conducts
-    APPOINTMENTS ||--o| CONSULTATIONS : links_to
-    CONSULTATIONS ||--|{ CONSULTATION_MEDICINE : prescribes
-    MEDICINES ||--|{ CONSULTATION_MEDICINE : dispensed_in
+    PATIENTS ||--o{ APPOINTMENTS : "has many"
+    HEALTH_WORKERS ||--o{ APPOINTMENTS : "has many"
+    PATIENTS ||--o{ CONSULTATIONS : "has many"
+    HEALTH_WORKERS ||--o{ CONSULTATIONS : "has many"
+    APPOINTMENTS ||--o| CONSULTATIONS : "has one"
+    MEDICINES ||--o{ CONSULTATIONS : "prescribed in"
 ```
 
 ---
 
 ## 💻 Tech Stack
 
-- **Backend Framework**: [Laravel 12.x](https://laravel.com)
-- **Language**: [PHP 8.2+](https://php.net)
-- **Frontend Stack**: [Blade Templates](https://laravel.com/docs/blade), [Tailwind CSS 3.x](https://tailwindcss.com), [Alpine.js](https://alpinejs.dev)
-- **Authentication**: [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze)
-- **Build Tool**: [Vite](https://vitejs.dev)
-- **Database**: MySQL 8.0+ (SQLite compatible for local testing)
-- **Testing**: [PHPUnit 11.x](https://phpunit.de)
+| Layer | Technology |
+| :--- | :--- |
+| **Backend Framework** | [Laravel 12.x](https://laravel.com) |
+| **Language** | [PHP 8.2+](https://php.net) |
+| **Frontend** | [Blade Templates](https://laravel.com/docs/blade) |
+| **UI Framework** | [Bootstrap 5.3 via CDN](https://getbootstrap.com) |
+| **Icons** | [Bootstrap Icons 1.11 via CDN](https://icons.getbootstrap.com) |
+| **Authentication** | [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze) |
+| **Build Tool** | [Vite](https://vitejs.dev) |
+| **Database** | MySQL 8.0+ (SQLite compatible for local testing) |
+| **Testing** | [PHPUnit 11.x](https://phpunit.de) |
 
 ---
 
@@ -183,7 +173,7 @@ Ensure you have the following installed on your development machine:
 - **PHP** >= 8.2 with extensions: `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `curl`
 - **Composer** >= 2.x
 - **Node.js** >= 18.x & **NPM**
-- **MySQL** >= 8.0 or MariaDB >= 10.4 (or SQLite)
+- **MySQL** >= 8.0 or MariaDB >= 10.4 (or SQLite for local testing)
 
 ---
 
@@ -252,7 +242,7 @@ Visit the application at: **`http://127.0.0.1:8000`**
 
 ## 🔑 Default Demo Credentials
 
-The database seeder automatically creates pre-configured accounts:
+The database seeder automatically creates two pre-configured accounts:
 
 | Role | Email Address | Password | Permissions |
 | :--- | :--- | :--- | :--- |
@@ -267,16 +257,21 @@ The database seeder automatically creates pre-configured accounts:
 | :--- | :--- | :--- | :--- |
 | `/dashboard` | `GET` | Central clinical KPIs, daily schedule, and inventory alerts | Authenticated |
 | `/patients` | `GET, POST` | Patient registry, search, creation, and profile histories | Authenticated |
+| `/patients/{id}` | `PUT, PATCH` | Update patient record | Authenticated |
 | `/patients/{id}` | `DELETE` | Soft-delete a patient record | Admin Only |
-| `/health-workers` | `GET, POST, PUT` | Healthcare worker directory and profile updates | Authenticated |
+| `/health-workers` | `GET, POST` | Healthcare worker directory and creation | Authenticated |
+| `/health-workers/{id}` | `PUT, PATCH` | Update health worker profile | Authenticated |
 | `/health-workers/{id}` | `DELETE` | Remove healthcare worker record | Admin Only |
-| `/appointments` | `GET, POST, PUT` | Book, reschedule, and update appointment statuses | Authenticated |
+| `/appointments` | `GET, POST` | Book and list appointments | Authenticated |
+| `/appointments/{id}` | `PUT, PATCH` | Reschedule or update appointment status | Authenticated |
 | `/appointments/{id}` | `DELETE` | Cancel / delete appointment | Admin Only |
-| `/consultations` | `GET, POST, PUT` | Record medical exams, diagnoses, and prescriptions | Authenticated |
+| `/consultations` | `GET, POST` | Record medical exams, diagnoses, and prescriptions | Authenticated |
+| `/consultations/{id}` | `PUT, PATCH` | Update consultation record | Authenticated |
 | `/consultations/{id}` | `DELETE` | Remove consultation log | Admin Only |
-| `/medicines` | `GET, POST, PUT` | Medicine catalog, stock counts, and reorder levels | Authenticated |
+| `/medicines` | `GET, POST` | Medicine catalog, stock counts, and reorder levels | Authenticated |
+| `/medicines/{id}` | `PUT, PATCH` | Update medicine details or stock | Authenticated |
 | `/medicines/{id}` | `DELETE` | Remove medicine item | Admin Only |
-| `/profile` | `GET, PATCH, DELETE`| User account profile and security settings | Authenticated |
+| `/profile` | `GET, PATCH, DELETE` | User account profile and security settings | Authenticated |
 | **Authentication** | | | |
 | `/register` | `GET, POST` | **Sign Up** — Create a new user account (name, email, password) | Guest Only |
 | `/login` | `GET, POST` | Sign in with email and password | Guest Only |
@@ -300,17 +295,24 @@ community-health-center/
 │   └── Models/                # Eloquent models (Patient, Appointment, Consultation, etc.)
 ├── database/
 │   ├── factories/             # Model factories for testing and seed data
-│   ├── migrations/            # Relational database schema definitions
-│   └── seeders/               # Database seeder with sample clinic records
+│   ├── migrations/            # Five domain table migrations + Laravel defaults
+│   └── seeders/               # DatabaseSeeder with realistic clinic sample records
 ├── resources/
-│   ├── css/                   # Tailwind CSS stylesheets
-│   ├── js/                    # JavaScript entry points
-│   └── views/                 # Blade UI templates (Dashboard, Patients, Medicines, etc.)
+│   ├── css/                   # Application stylesheets
+│   ├── js/                    # JavaScript entry points (Vite)
+│   └── views/                 # Blade UI templates (Bootstrap 5 powered)
+│       ├── layouts/           # app.blade.php — shared Bootstrap layout & navigation
+│       ├── patients/          # Patient CRUD views
+│       ├── health-workers/    # Health Worker CRUD views
+│       ├── appointments/      # Appointment CRUD views
+│       ├── consultations/     # Consultation CRUD views
+│       ├── medicines/         # Medicine CRUD views
+│       └── dashboard.blade.php
 ├── routes/
 │   ├── web.php                # Web routes & role-gated endpoints
 │   └── auth.php               # Authentication routes (Breeze)
 └── tests/
-    ├── Feature/               # Feature and integration tests
+    ├── Feature/               # Feature & integration tests (CRUD, routes, relationships)
     └── Unit/                  # Unit tests
 ```
 
@@ -318,10 +320,35 @@ community-health-center/
 
 ## 🧪 Testing & Quality Assurance
 
-Run the test suite using PHPUnit / Artisan:
+The project ships with **59 automated tests covering 185 assertions** across all modules:
+
+| Test Suite | Tests | Coverage |
+| :--- | :---: | :--- |
+| `PatientCrudTest` | 8 | Create, read, update, soft-delete, validation, role restrictions |
+| `HealthWorkerCrudTest` | 6 | Full CRUD, duplicate email prevention, role restrictions |
+| `AppointmentCrudTest` | 5 | Scheduling, double-booking conflict prevention, status updates |
+| `ConsultationCrudTest` | 4 | Create with medicine deduction, appointment linkage, stock restore on delete |
+| `MedicineCrudTest` | 6 | Catalog, stock update, low-stock/expiry detection, role restrictions |
+| `NavigationAndRoutesTest` | 3 | Guest redirect, protected routes, dashboard metrics |
+| `DatabaseAndRelationshipsTest` | 2 | Migration + seeder execution, all 5 model relationships |
+| `Auth/*` | 14 | Login, register, password reset, email verification, profile |
+| `ProfileTest` | 5 | Profile display, update, account deletion |
+| `ExampleTest (Unit)` | 1 | Baseline sanity check |
+
+Run the full test suite:
 
 ```bash
 php artisan test
+```
+
+Run a specific test class:
+```bash
+php artisan test --filter PatientCrudTest
+```
+
+Run migrations fresh with seed data for manual testing:
+```bash
+php artisan migrate:fresh --seed
 ```
 
 To run code formatting checks with Laravel Pint:
