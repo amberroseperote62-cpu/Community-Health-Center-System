@@ -17,10 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('generic_name');
             $table->string('category'); // e.g., Antibiotic, Analgesic, Vitamin
-            // Dosage form defines how the medicine is taken
             $table->enum('dosage_form', ['tablet', 'syrup', 'capsule', 'injection', 'ointment', 'drops', 'other']);
             $table->integer('stock_quantity')->default(0);
-            // When stock <= reorder_level, show low-stock warning
             $table->integer('reorder_level')->default(10);
             $table->date('expiry_date');
             $table->timestamps();

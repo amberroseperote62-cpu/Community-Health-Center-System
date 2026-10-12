@@ -1,92 +1,106 @@
 @extends('layouts.app')
 
 @section('title', 'Patients')
-@section('subtitle', 'Manage patient records')
+@section('subtitle', 'Manage registered patient records and medical histories')
 
 @section('content')
 
-<div class="flex items-center justify-between mb-6">
-    <form method="GET" action="{{ route('patients.index') }}" class="flex items-center gap-2">
-        <input type="text" name="search" value="{{ $search }}" placeholder="Search by name..."
-            id="patient-search"
-            class="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 w-64">
-        <button type="submit"
-            class="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
-            Search
-        </button>
-        @if($search)
-        <a href="{{ route('patients.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
-        @endif
-    </form>
-    <a href="{{ route('patients.create') }}"
-        id="btn-add-patient"
-        class="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Add Patient
-    </a>
+<!-- Header Bar: Search & Action Button -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <form method="GET" action="{{ route('patients.index') }}" class="d-flex align-items-center gap-2">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" value="{{ $search }}" placeholder="Search by name..." id="patient-search" class="form-control border-start-0 ps-0" style="max-width: 280px;">
+                <button type="submit" class="btn btn-outline-secondary">Search</button>
+            </div>
+            @if($search)
+                <a href="{{ route('patients.index') }}" class="btn btn-link btn-sm text-decoration-none">Clear</a>
+            @endif
+        </form>
+
+        <a href="{{ route('patients.create') }}" id="btn-add-patient" class="btn btn-chc-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-person-plus-fill"></i>
+            <span>Register New Patient</span>
+        </a>
+    </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 border-b border-gray-100">
-            <tr>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Birthdate</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
-                <th class="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50">
-            @forelse($patients as $patient)
-            <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-5 py-3 text-gray-400 text-xs">{{ $patient->id }}</td>
-                <td class="px-5 py-3">
-                    <div class="font-medium text-gray-800">{{ $patient->full_name }}</div>
-                    <div class="text-xs text-gray-400 truncate max-w-xs">{{ $patient->address }}</div>
-                </td>
-                <td class="px-5 py-3 text-gray-600">{{ $patient->gender }}</td>
-                <td class="px-5 py-3 text-gray-600">{{ $patient->birthdate->format('M d, Y') }}</td>
-                <td class="px-5 py-3 text-gray-600">{{ $patient->contact_number }}</td>
-                <td class="px-5 py-3">
-                    <div class="flex items-center justify-center gap-2">
-                        <a href="{{ route('patients.show', $patient) }}"
-                            class="px-3 py-1.5 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors">
-                            View
+<!-- Patients Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 60px;">ID</th>
+                    <th scope="col">Full Name &amp; Address</th>
+                    <th scope="col">Gender</th>
+                    <th scope="col">Birthdate / Age</th>
+                    <th scope="col">Contact</th>
+                    <th scope="col" class="text-center" style="width: 200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($patients as $patient)
+                <tr>
+                    <td class="text-muted fw-bold">#{{ $patient->id }}</td>
+                    <td>
+                        <a href="{{ route('patients.show', $patient) }}" class="fw-semibold text-dark text-decoration-none">
+                            {{ $patient->full_name }}
                         </a>
-                        <a href="{{ route('patients.edit', $patient) }}"
-                            class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-                            Edit
-                        </a>
-                        @if(auth()->user()->isAdmin())
-                        <button type="button"
-                            data-delete-url="{{ route('patients.destroy', $patient) }}"
-                            data-delete-msg="Are you sure you want to delete {{ $patient->full_name }}? This will soft-delete the record."
-                            class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-                            Delete
-                        </button>
+                        <div class="text-muted small text-truncate" style="max-width: 320px;">
+                            <i class="bi bi-geo-alt me-1"></i>{{ $patient->address }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {{ $patient->gender === 'Male' ? 'bg-primary' : ($patient->gender === 'Female' ? 'bg-danger' : 'bg-secondary') }}">
+                            {{ $patient->gender }}
+                        </span>
+                    </td>
+                    <td>
+                        <div>{{ $patient->birthdate->format('M d, Y') }}</div>
+                        <small class="text-muted">({{ $patient->age }} years old)</small>
+                    </td>
+                    <td>
+                        <div><i class="bi bi-telephone me-1 text-muted"></i>{{ $patient->contact_number }}</div>
+                        @if($patient->emergency_contact)
+                            <small class="text-muted"><i class="bi bi-person-heart me-1"></i>{{ $patient->emergency_contact }}</small>
                         @endif
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="6" class="px-5 py-12 text-center text-gray-400">
-                    <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    No patients found{{ $search ? ' for "' . $search . '"' : '' }}.
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ route('patients.show', $patient) }}" class="btn btn-outline-info" title="View Profile">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ route('patients.edit', $patient) }}" class="btn btn-outline-primary" title="Edit Patient">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            @if(auth()->user()->isAdmin())
+                            <button type="button" class="btn btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#deleteConfirmModal"
+                                data-delete-url="{{ route('patients.destroy', $patient) }}"
+                                data-delete-msg="Are you sure you want to delete patient record for {{ $patient->full_name }}? This will soft-delete the patient."
+                                title="Delete Patient">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                        No patient records found{{ $search ? ' matching "' . $search . '"' : '' }}.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
     @if($patients->hasPages())
-    <div class="px-5 py-4 border-t border-gray-100">
+    <div class="card-footer bg-white border-top-0 py-3 d-flex justify-content-center">
         {{ $patients->links() }}
     </div>
     @endif

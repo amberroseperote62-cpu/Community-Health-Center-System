@@ -1,76 +1,106 @@
 @extends('layouts.app')
 
 @section('title', 'Add Medicine')
-@section('subtitle', 'Add to medicine inventory')
+@section('subtitle', 'Add pharmaceutical product to clinic stock inventory')
 
 @section('content')
 
-<div class="max-w-2xl">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        @include('partials.errors')
-
-        <form method="POST" action="{{ route('medicines.store') }}" id="create-med-form">
-            @csrf
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" id="med_name" value="{{ old('name') }}"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 @error('name') border-red-400 @enderror"
-                        placeholder="e.g. Paracetamol 500mg">
-                    @error('name')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Generic Name <span class="text-red-500">*</span></label>
-                    <input type="text" name="generic_name" id="med_generic" value="{{ old('generic_name') }}"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 @error('generic_name') border-red-400 @enderror"
-                        placeholder="e.g. Paracetamol">
-                    @error('generic_name')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
-                    <input type="text" name="category" id="med_category" value="{{ old('category') }}"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 @error('category') border-red-400 @enderror"
-                        placeholder="e.g. Antibiotic, Vitamin">
-                    @error('category')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Dosage Form <span class="text-red-500">*</span></label>
-                    <select name="dosage_form" id="med_form"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 @error('dosage_form') border-red-400 @enderror">
-                        <option value="">Select form</option>
-                        @foreach(['tablet', 'syrup', 'capsule', 'injection', 'ointment', 'drops', 'other'] as $form)
-                        <option value="{{ $form }}" {{ old('dosage_form') == $form ? 'selected' : '' }}>{{ ucfirst($form) }}</option>
-                        @endforeach
-                    </select>
-                    @error('dosage_form')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity <span class="text-red-500">*</span></label>
-                    <input type="number" name="stock_quantity" id="med_stock" value="{{ old('stock_quantity', 0) }}" min="0"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 @error('stock_quantity') border-red-400 @enderror">
-                    @error('stock_quantity')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Reorder Level <span class="text-red-500">*</span></label>
-                    <input type="number" name="reorder_level" id="med_reorder" value="{{ old('reorder_level', 10) }}" min="0"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 @error('reorder_level') border-red-400 @enderror">
-                    <p class="mt-1 text-xs text-gray-400">Alert shown when stock reaches this level</p>
-                    @error('reorder_level')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date <span class="text-red-500">*</span></label>
-                    <input type="date" name="expiry_date" id="med_expiry" value="{{ old('expiry_date') }}"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 @error('expiry_date') border-red-400 @enderror">
-                    @error('expiry_date')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-                </div>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-bold"><i class="bi bi-capsule text-primary me-2"></i>New Medicine Entry</h5>
             </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ route('medicines.store') }}" id="create-med-form">
+                    @csrf
 
-            <div class="flex items-center gap-3 mt-6 pt-5 border-t border-gray-100">
-                <button type="submit" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors">Add Medicine</button>
-                <a href="{{ route('medicines.index') }}" class="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">Cancel</a>
+                    <div class="row g-3">
+                        <!-- Brand Name -->
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Brand / Commercial Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="name" value="{{ old('name') }}"
+                                class="form-control @error('name') is-invalid @enderror" placeholder="e.g. Biogesic 500mg" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Generic Name -->
+                        <div class="col-md-6">
+                            <label for="generic_name" class="form-label fw-semibold">Generic Name <span class="text-danger">*</span></label>
+                            <input type="text" name="generic_name" id="generic_name" value="{{ old('generic_name') }}"
+                                class="form-control @error('generic_name') is-invalid @enderror" placeholder="e.g. Paracetamol" required>
+                            @error('generic_name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Category -->
+                        <div class="col-md-6">
+                            <label for="category" class="form-label fw-semibold">Therapeutic Category <span class="text-danger">*</span></label>
+                            <input type="text" name="category" id="category" value="{{ old('category') }}"
+                                class="form-control @error('category') is-invalid @enderror" placeholder="e.g. Analgesic, Antibiotic, Antihistamine" required>
+                            @error('category')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Dosage Form -->
+                        <div class="col-md-6">
+                            <label for="dosage_form" class="form-label fw-semibold">Dosage Form <span class="text-danger">*</span></label>
+                            <select name="dosage_form" id="dosage_form" class="form-select @error('dosage_form') is-invalid @enderror" required>
+                                <option value="">Select form...</option>
+                                @foreach(['tablet', 'syrup', 'capsule', 'injection', 'ointment', 'drops', 'other'] as $form)
+                                    <option value="{{ $form }}" {{ old('dosage_form') === $form ? 'selected' : '' }}>{{ ucfirst($form) }}</option>
+                                @endforeach
+                            </select>
+                            @error('dosage_form')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Stock Quantity -->
+                        <div class="col-md-6">
+                            <label for="stock_quantity" class="form-label fw-semibold">Initial Stock Quantity <span class="text-danger">*</span></label>
+                            <input type="number" name="stock_quantity" id="stock_quantity" value="{{ old('stock_quantity', 50) }}" min="0"
+                                class="form-control @error('stock_quantity') is-invalid @enderror" required>
+                            @error('stock_quantity')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Reorder Level -->
+                        <div class="col-md-6">
+                            <label for="reorder_level" class="form-label fw-semibold">Reorder Warning Level <span class="text-danger">*</span></label>
+                            <input type="number" name="reorder_level" id="reorder_level" value="{{ old('reorder_level', 15) }}" min="0"
+                                class="form-control @error('reorder_level') is-invalid @enderror" required>
+                            <small class="text-muted">Triggers low-stock alert when quantity is &le; this value.</small>
+                            @error('reorder_level')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Expiry Date -->
+                        <div class="col-12">
+                            <label for="expiry_date" class="form-label fw-semibold">Batch Expiration Date <span class="text-danger">*</span></label>
+                            <input type="date" name="expiry_date" id="expiry_date" value="{{ old('expiry_date') }}"
+                                class="form-control @error('expiry_date') is-invalid @enderror" required>
+                            @error('expiry_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-chc-primary px-4">
+                            <i class="bi bi-save me-1"></i> Add Medicine to Inventory
+                        </button>
+                        <a href="{{ route('medicines.index') }}" class="btn btn-outline-secondary px-3">Cancel</a>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 

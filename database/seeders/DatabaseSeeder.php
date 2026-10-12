@@ -90,11 +90,23 @@ class DatabaseSeeder extends Seeder
         foreach ($completedAppointments as $appt) {
             if ($consultationCount >= 15) break;
 
-            $consultation = Consultation::create([
-                'appointment_id'   => $appt->id,
-                'patient_id'       => $appt->patient_id,
-                'health_worker_id' => $appt->health_worker_id,
-                'consultation_date' => $appt->appointment_date,
+            $medicine = Medicine::where('stock_quantity', '>', 10)->inRandomOrder()->first();
+            $qty = $medicine ? rand(1, 5) : null;
+
+            Consultation::create([
+                'appointment_id'      => $appt->id,
+                'patient_id'          => $appt->patient_id,
+                'health_worker_id'    => $appt->health_worker_id,
+                'medicine_id'         => $medicine?->id,
+                'prescribed_quantity' => $qty,
+                'dosage_instructions' => $medicine ? collect([
+                    '1 tablet 3x a day for 7 days',
+                    '1 capsule twice daily',
+                    '5ml syrup every 6 hours',
+                    '1 tablet as needed for pain',
+                    'Apply thin layer twice daily',
+                ])->random() : null,
+                'consultation_date'   => $appt->appointment_date,
                 'symptoms' => collect([
                     'Fever, cough, and colds', 'Abdominal pain', 'Headache and dizziness',
                     'Skin rash', 'High blood pressure', 'Joint pain',
@@ -112,21 +124,7 @@ class DatabaseSeeder extends Seeder
                 ])->random(),
             ]);
 
-            // Attach 1–3 medicines as prescriptions and deduct stock
-            $medicines = Medicine::inRandomOrder()->limit(rand(1, 3))->get();
-            foreach ($medicines as $medicine) {
-                $qty = rand(1, 10);
-                $consultation->medicines()->attach($medicine->id, [
-                    'quantity'            => $qty,
-                    'dosage_instructions' => collect([
-                        '1 tablet 3x a day for 7 days',
-                        '1 capsule twice daily',
-                        '5ml syrup every 6 hours',
-                        '1 tablet as needed for pain',
-                        'Apply thin layer twice daily',
-                    ])->random(),
-                ]);
-                // Deduct prescribed quantity from medicine stock
+            if ($medicine && $qty) {
                 $medicine->decrement('stock_quantity', $qty);
             }
 

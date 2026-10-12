@@ -1,134 +1,177 @@
 @extends('layouts.app')
 
 @section('title', $patient->full_name)
-@section('subtitle', 'Patient Profile')
+@section('subtitle', 'Patient Clinical Profile & Record History')
 
 @section('content')
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="row g-4">
+    <!-- Patient Profile Summary Card -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 text-center border-bottom">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center fs-2" style="width: 80px; height: 80px;">
+                    {{ strtoupper(substr($patient->first_name, 0, 1)) }}
+                </div>
+                <h4 class="fw-bold mb-1 text-dark">{{ $patient->full_name }}</h4>
+                <div class="text-muted small mb-2"><i class="bi bi-person-vcard me-1"></i>Patient ID: #{{ $patient->id }}</div>
+                <span class="badge {{ $patient->gender === 'Male' ? 'bg-primary' : ($patient->gender === 'Female' ? 'bg-danger' : 'bg-secondary') }}">
+                    {{ $patient->gender }}
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle text-primary me-2"></i>Personal &amp; Contact Details</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Birthdate</span>
+                        <span class="fw-semibold">{{ $patient->birthdate->format('F d, Y') }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Age</span>
+                        <span class="fw-semibold">{{ $patient->birthdate->age }} years old</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Contact</span>
+                        <span class="fw-semibold">{{ $patient->contact_number }}</span>
+                    </li>
+                    <li class="py-2 border-bottom">
+                        <div class="text-muted small mb-1">Residential Address</div>
+                        <div class="fw-semibold">{{ $patient->address }}</div>
+                    </li>
+                    @if($patient->emergency_contact)
+                    <li class="py-2">
+                        <div class="text-muted small mb-1">Emergency Contact</div>
+                        <div class="fw-semibold text-danger"><i class="bi bi-telephone-inbound me-1"></i>{{ $patient->emergency_contact }}</div>
+                    </li>
+                    @endif
+                </ul>
 
-    {{-- ===== Patient Info Card ===== --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div class="flex items-center gap-4 mb-5">
-            <div class="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-2xl font-bold text-teal-700">
-                {{ strtoupper(substr($patient->first_name, 0, 1)) }}
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{{ route('patients.edit', $patient) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil me-1"></i> Edit Patient Details
+                    </a>
+                    @if(auth()->user()->isAdmin())
+                    <button type="button" class="btn btn-outline-danger"
+                        data-bs-toggle="modal" data-bs-target="#deleteConfirmModal"
+                        data-delete-url="{{ route('patients.destroy', $patient) }}"
+                        data-delete-msg="Are you sure you want to delete patient record for {{ $patient->full_name }}?">
+                        <i class="bi bi-trash me-1"></i> Delete Patient Record
+                    </button>
+                    @endif
+                    <a href="{{ route('patients.index') }}" class="btn btn-light border text-muted">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Patient Registry
+                    </a>
+                </div>
             </div>
-            <div>
-                <h2 class="text-lg font-semibold text-gray-900">{{ $patient->full_name }}</h2>
-                <p class="text-sm text-gray-500">Patient ID: #{{ $patient->id }}</p>
-            </div>
-        </div>
-
-        <dl class="space-y-3 text-sm">
-            <div class="flex justify-between">
-                <dt class="text-gray-500">Gender</dt>
-                <dd class="font-medium text-gray-800">{{ $patient->gender }}</dd>
-            </div>
-            <div class="flex justify-between">
-                <dt class="text-gray-500">Birthdate</dt>
-                <dd class="font-medium text-gray-800">{{ $patient->birthdate->format('F d, Y') }}</dd>
-            </div>
-            <div class="flex justify-between">
-                <dt class="text-gray-500">Age</dt>
-                <dd class="font-medium text-gray-800">{{ $patient->birthdate->age }} years old</dd>
-            </div>
-            <div>
-                <dt class="text-gray-500 mb-1">Address</dt>
-                <dd class="font-medium text-gray-800">{{ $patient->address }}</dd>
-            </div>
-            <div class="flex justify-between">
-                <dt class="text-gray-500">Contact</dt>
-                <dd class="font-medium text-gray-800">{{ $patient->contact_number }}</dd>
-            </div>
-            @if($patient->emergency_contact)
-            <div>
-                <dt class="text-gray-500 mb-1">Emergency Contact</dt>
-                <dd class="font-medium text-gray-800">{{ $patient->emergency_contact }}</dd>
-            </div>
-            @endif
-        </dl>
-
-        <div class="flex gap-2 mt-5 pt-4 border-t border-gray-100">
-            <a href="{{ route('patients.edit', $patient) }}"
-                class="flex-1 text-center px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-                Edit
-            </a>
-            @if(auth()->user()->isAdmin())
-            <button type="button"
-                data-delete-url="{{ route('patients.destroy', $patient) }}"
-                data-delete-msg="Delete {{ $patient->full_name }}? This is a soft-delete and can be recovered."
-                class="flex-1 text-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-                Delete
-            </button>
-            @endif
         </div>
     </div>
 
-    {{-- ===== History ===== --}}
-    <div class="lg:col-span-2 space-y-5">
-
-        {{-- Appointment History --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 class="font-semibold text-gray-800">Appointment History</h3>
-                <span class="text-xs text-gray-400">{{ $patient->appointments->count() }} total</span>
-            </div>
-            <div class="divide-y divide-gray-50 max-h-64 overflow-y-auto">
-                @forelse($patient->appointments as $appt)
-                <div class="px-5 py-3 flex items-start justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">{{ $appt->appointment_date->format('M d, Y') }} at {{ \Carbon\Carbon::parse($appt->appointment_time)->format('g:i A') }}</p>
-                        <p class="text-xs text-gray-500">{{ $appt->healthWorker->full_name }} &mdash; {{ $appt->reason }}</p>
-                    </div>
-                    @php
-                        $colors = ['pending' => 'amber', 'confirmed' => 'blue', 'completed' => 'green', 'cancelled' => 'red'];
-                        $c = $colors[$appt->status] ?? 'gray';
-                    @endphp
-                    <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-{{ $c }}-100 text-{{ $c }}-700 capitalize">
-                        {{ $appt->status }}
-                    </span>
+    <!-- Clinical History Columns -->
+    <div class="col-12 col-lg-8">
+        <!-- Appointment History Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar-check text-primary fs-5"></i>
+                    <h5 class="card-title mb-0 fw-bold">Appointment History</h5>
                 </div>
-                @empty
-                <p class="px-5 py-8 text-sm text-gray-400 text-center">No appointments recorded.</p>
-                @endforelse
+                <span class="badge bg-secondary rounded-pill">{{ $patient->appointments->count() }} records</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush" style="max-height: 280px; overflow-y: auto;">
+                    @forelse($patient->appointments as $appt)
+                    <div class="list-group-item p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <div>
+                                <span class="fw-bold text-dark me-2">
+                                    {{ $appt->appointment_date->format('M d, Y') }} at {{ \Carbon\Carbon::parse($appt->appointment_time)->format('g:i A') }}
+                                </span>
+                                <span class="badge bg-light text-dark border">Dr./Worker: {{ $appt->healthWorker->full_name }}</span>
+                            </div>
+                            @php
+                                $statusBadges = [
+                                    'pending' => 'bg-warning text-dark',
+                                    'confirmed' => 'bg-primary',
+                                    'completed' => 'bg-success',
+                                    'cancelled' => 'bg-secondary',
+                                ];
+                            @endphp
+                            <span class="badge {{ $statusBadges[$appt->status] ?? 'bg-secondary' }} text-capitalize">
+                                {{ $appt->status }}
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-0"><i class="bi bi-chat-left-dots me-1"></i><strong>Reason:</strong> {{ $appt->reason }}</p>
+                    </div>
+                    @empty
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-calendar-x fs-2 d-block mb-1 text-secondary"></i>
+                        No appointments recorded for this patient.
+                    </div>
+                    @endforelse
+                </div>
             </div>
         </div>
 
-        {{-- Consultation History --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 class="font-semibold text-gray-800">Consultation History</h3>
-                <span class="text-xs text-gray-400">{{ $patient->consultations->count() }} total</span>
-            </div>
-            <div class="divide-y divide-gray-50 max-h-80 overflow-y-auto">
-                @forelse($patient->consultations as $consult)
-                <div class="px-5 py-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-sm font-semibold text-gray-800">{{ $consult->consultation_date->format('M d, Y') }}</p>
-                        <span class="text-xs text-gray-500">Dr. {{ $consult->healthWorker->full_name }}</span>
-                    </div>
-                    <div class="text-xs text-gray-600 space-y-1">
-                        <p><span class="font-medium">Symptoms:</span> {{ $consult->symptoms }}</p>
-                        <p><span class="font-medium">Diagnosis:</span> {{ $consult->diagnosis }}</p>
-                        <p><span class="font-medium">Treatment:</span> {{ $consult->treatment_notes }}</p>
-                    </div>
-                    @if($consult->medicines->isNotEmpty())
-                    <div class="mt-2 flex flex-wrap gap-1">
-                        @foreach($consult->medicines as $med)
-                        <span class="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full">
-                            {{ $med->name }} ({{ $med->pivot->quantity }} units)
-                        </span>
-                        @endforeach
-                    </div>
-                    @endif
-                    <div class="mt-2">
-                        <a href="{{ route('consultations.show', $consult) }}"
-                            class="text-xs text-teal-600 hover:text-teal-700 font-medium">View full details →</a>
-                    </div>
+        <!-- Consultation & Clinical Encounter History Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-clipboard2-pulse text-success fs-5"></i>
+                    <h5 class="card-title mb-0 fw-bold">Consultation History &amp; Prescriptions</h5>
                 </div>
-                @empty
-                <p class="px-5 py-8 text-sm text-gray-400 text-center">No consultations recorded.</p>
-                @endforelse
+                <span class="badge bg-success rounded-pill">{{ $patient->consultations->count() }} visits</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush" style="max-height: 380px; overflow-y: auto;">
+                    @forelse($patient->consultations as $consult)
+                    <div class="list-group-item p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                {{ $consult->consultation_date->format('F d, Y') }}
+                            </h6>
+                            <span class="badge bg-light text-dark border">
+                                Attending: {{ $consult->healthWorker->full_name }}
+                            </span>
+                        </div>
+                        <div class="row g-2 small text-muted mb-2">
+                            <div class="col-12">
+                                <strong class="text-dark">Symptoms:</strong> {{ $consult->symptoms }}
+                            </div>
+                            <div class="col-12">
+                                <strong class="text-dark">Diagnosis:</strong>
+                                <span class="text-primary fw-semibold">{{ $consult->diagnosis }}</span>
+                            </div>
+                            <div class="col-12">
+                                <strong class="text-dark">Treatment Notes:</strong> {{ $consult->treatment_notes }}
+                            </div>
+                        </div>
+
+                        @if($consult->medicine)
+                        <div class="p-2 bg-light rounded border mb-2 small">
+                            <div class="fw-semibold text-success mb-1">
+                                <i class="bi bi-capsule me-1"></i> Prescribed Medication:
+                            </div>
+                            <div>
+                                <strong>{{ $consult->medicine->name }}</strong> ({{ $consult->prescribed_quantity }} units)
+                                &mdash; <span class="text-muted">{{ $consult->dosage_instructions }}</span>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="text-end">
+                            <a href="{{ route('consultations.show', $consult) }}" class="btn btn-sm btn-outline-info">
+                                View Full Consultation Record <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-clipboard-x fs-2 d-block mb-1 text-secondary"></i>
+                        No medical consultations logged for this patient yet.
+                    </div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>

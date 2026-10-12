@@ -12,15 +12,14 @@ use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Resource controller for managing consultations.
- * Also handles prescriptions and stock deduction.
+ * Resource controller for managing consultations and prescriptions.
  */
 class ConsultationController extends Controller
 {
     public function index()
     {
         $search        = request('search');
-        $consultations = Consultation::with(['patient', 'healthWorker'])
+        $consultations = Consultation::with(['patient', 'healthWorker', 'medicine'])
             ->when($search, function ($q, $search) {
                 $q->whereHas('patient', function ($pq) use ($search) {
                     $pq->where('first_name', 'like', "%{$search}%")
@@ -56,42 +55,28 @@ class ConsultationController extends Controller
     public function store(StoreConsultationRequest $request)
     {
         DB::transaction(function () use ($request) {
-            // Create the consultation record
-            $consultation = Consultation::create($request->only([
-                'appointment_id', 'patient_id', 'health_worker_id',
-                'consultation_date', 'symptoms', 'diagnosis', 'treatment_notes',
-            ]));
+            $consultation = Consultation::create($request->validated());
 
             // Mark linked appointment as completed if provided
             if ($request->appointment_id) {
-                Appointment::find($request->appointment_id)
+                Appointment::where('id', $request->appointment_id)
                     ->update(['status' => 'completed']);
             }
 
-            // Attach prescribed medicines and deduct stock
-            if ($request->has('medicines') && is_array($request->medicines)) {
-                foreach ($request->medicines as $med) {
-                    if (empty($med['medicine_id'])) continue;
-
-                    $consultation->medicines()->attach($med['medicine_id'], [
-                        'quantity'            => $med['quantity'],
-                        'dosage_instructions' => $med['dosage_instructions'],
-                    ]);
-
-                    // Deduct from inventory (prevent negative stock)
-                    Medicine::find($med['medicine_id'])
-                        ->decrement('stock_quantity', $med['quantity']);
-                }
+            // Deduct from inventory if medicine prescribed
+            if ($request->filled('medicine_id') && $request->filled('prescribed_quantity')) {
+                Medicine::where('id', $request->medicine_id)
+                    ->decrement('stock_quantity', $request->prescribed_quantity);
             }
         });
 
         return redirect()->route('consultations.index')
-            ->with('success', 'Consultation recorded and prescriptions saved.');
+            ->with('success', 'Consultation recorded and prescription saved.');
     }
 
     public function show(Consultation $consultation)
     {
-        $consultation->load(['patient', 'healthWorker', 'appointment', 'medicines']);
+        $consultation->load(['patient', 'healthWorker', 'appointment', 'medicine']);
         return view('consultations.show', compact('consultation'));
     }
 
@@ -106,44 +91,28 @@ class ConsultationController extends Controller
             ->orderByDesc('appointment_date')
             ->get();
 
-        $consultation->load('medicines');
-
         return view('consultations.edit', compact('consultation', 'patients', 'healthWorkers', 'medicines', 'appointments'));
     }
 
     /**
      * Update a consultation.
-     * Re-syncs medicines: restores old stock then deducts new quantities.
+     * Restores previous stock and deducts new prescription stock if changed.
      */
     public function update(UpdateConsultationRequest $request, Consultation $consultation)
     {
         DB::transaction(function () use ($request, $consultation) {
-            $consultation->update($request->only([
-                'appointment_id', 'patient_id', 'health_worker_id',
-                'consultation_date', 'symptoms', 'diagnosis', 'treatment_notes',
-            ]));
-
-            // Restore previously deducted stock before re-syncing
-            foreach ($consultation->medicines as $medicine) {
-                $medicine->increment('stock_quantity', $medicine->pivot->quantity);
+            // Restore previously deducted stock
+            if ($consultation->medicine_id && $consultation->prescribed_quantity) {
+                Medicine::where('id', $consultation->medicine_id)
+                    ->increment('stock_quantity', $consultation->prescribed_quantity);
             }
 
-            // Detach all medicines then re-attach with new prescriptions
-            $consultation->medicines()->detach();
+            $consultation->update($request->validated());
 
-            if ($request->has('medicines') && is_array($request->medicines)) {
-                foreach ($request->medicines as $med) {
-                    if (empty($med['medicine_id'])) continue;
-
-                    $consultation->medicines()->attach($med['medicine_id'], [
-                        'quantity'            => $med['quantity'],
-                        'dosage_instructions' => $med['dosage_instructions'],
-                    ]);
-
-                    // Deduct new quantity from inventory
-                    Medicine::find($med['medicine_id'])
-                        ->decrement('stock_quantity', $med['quantity']);
-                }
+            // Deduct new prescription stock
+            if ($request->filled('medicine_id') && $request->filled('prescribed_quantity')) {
+                Medicine::where('id', $request->medicine_id)
+                    ->decrement('stock_quantity', $request->prescribed_quantity);
             }
         });
 
@@ -153,11 +122,14 @@ class ConsultationController extends Controller
 
     public function destroy(Consultation $consultation)
     {
-        // Restore stock before deleting
-        foreach ($consultation->medicines as $medicine) {
-            $medicine->increment('stock_quantity', $medicine->pivot->quantity);
-        }
-        $consultation->delete();
+        DB::transaction(function () use ($consultation) {
+            // Restore stock before deleting
+            if ($consultation->medicine_id && $consultation->prescribed_quantity) {
+                Medicine::where('id', $consultation->medicine_id)
+                    ->increment('stock_quantity', $consultation->prescribed_quantity);
+            }
+            $consultation->delete();
+        });
 
         return redirect()->route('consultations.index')
             ->with('success', 'Consultation record deleted.');

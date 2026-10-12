@@ -21,11 +21,9 @@ class StoreConsultationRequest extends FormRequest
             'symptoms'          => 'required|string|max:1000',
             'diagnosis'         => 'required|string|max:1000',
             'treatment_notes'   => 'required|string|max:2000',
-            // Medicines array (optional prescriptions)
-            'medicines'                       => 'nullable|array',
-            'medicines.*.medicine_id'         => 'required_with:medicines|exists:medicines,id',
-            'medicines.*.quantity'            => 'required_with:medicines|integer|min:1',
-            'medicines.*.dosage_instructions' => 'required_with:medicines|string|max:255',
+            'medicine_id'          => 'nullable|exists:medicines,id',
+            'prescribed_quantity'  => 'nullable|required_with:medicine_id|integer|min:1',
+            'dosage_instructions'  => 'nullable|required_with:medicine_id|string|max:255',
         ];
     }
 }

@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Consultation extends Model
 {
@@ -18,6 +17,9 @@ class Consultation extends Model
         'appointment_id',
         'patient_id',
         'health_worker_id',
+        'medicine_id',
+        'prescribed_quantity',
+        'dosage_instructions',
         'consultation_date',
         'symptoms',
         'diagnosis',
@@ -56,13 +58,10 @@ class Consultation extends Model
     }
 
     /**
-     * A consultation can have many prescribed medicines (many-to-many).
-     * The pivot table stores quantity and dosage_instructions.
+     * A consultation may prescribe a medicine directly from inventory (nullable).
      */
-    public function medicines(): BelongsToMany
+    public function medicine(): BelongsTo
     {
-        return $this->belongsToMany(Medicine::class, 'consultation_medicine')
-            ->withPivot('quantity', 'dosage_instructions')
-            ->withTimestamps();
+        return $this->belongsTo(Medicine::class);
     }
 }

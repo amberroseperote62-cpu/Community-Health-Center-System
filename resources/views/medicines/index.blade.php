@@ -1,94 +1,115 @@
 @extends('layouts.app')
 
-@section('title', 'Medicines')
-@section('subtitle', 'Inventory management')
+@section('title', 'Medicine Inventory')
+@section('subtitle', 'Pharmacy catalog, real-time stock levels, and expiration monitoring')
 
 @section('content')
 
-<div class="flex items-center justify-between mb-6">
-    <form method="GET" action="{{ route('medicines.index') }}" class="flex items-center gap-2">
-        <input type="text" name="search" value="{{ $search }}" placeholder="Search by name or category..."
-            id="med-search"
-            class="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 w-72">
-        <button type="submit" class="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">Search</button>
-        @if($search)
-        <a href="{{ route('medicines.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
-        @endif
-    </form>
-    <a href="{{ route('medicines.create') }}"
-        id="btn-add-med"
-        class="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Add Medicine
-    </a>
+<!-- Header Bar: Search & Action Button -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <form method="GET" action="{{ route('medicines.index') }}" class="d-flex align-items-center gap-2">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" value="{{ $search }}" placeholder="Search by name or category..." id="med-search" class="form-control border-start-0 ps-0" style="max-width: 280px;">
+                <button type="submit" class="btn btn-outline-secondary">Search</button>
+            </div>
+            @if($search)
+                <a href="{{ route('medicines.index') }}" class="btn btn-link btn-sm text-decoration-none">Clear</a>
+            @endif
+        </form>
+
+        <a href="{{ route('medicines.create') }}" id="btn-add-med" class="btn btn-chc-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Add Medicine to Stock</span>
+        </a>
+    </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 border-b border-gray-100">
-            <tr>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Form</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Expiry</th>
-                <th class="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50">
-            @forelse($medicines as $med)
-            {{-- Highlight entire row if expired --}}
-            <tr class="hover:bg-gray-50 transition-colors {{ $med->isExpired() ? 'bg-red-50' : ($med->isNearExpiry() ? 'bg-amber-50' : '') }}">
-                <td class="px-5 py-3">
-                    <p class="font-medium text-gray-800">{{ $med->name }}</p>
-                    <p class="text-xs text-gray-400">{{ $med->generic_name }}</p>
-                </td>
-                <td class="px-5 py-3 text-gray-600">{{ $med->category }}</td>
-                <td class="px-5 py-3">
-                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs capitalize">{{ $med->dosage_form }}</span>
-                </td>
-                <td class="px-5 py-3">
-                    {{-- Red for low/zero stock, normal otherwise --}}
-                    <span class="font-semibold {{ $med->isLowStock() ? 'text-red-600' : 'text-gray-800' }}">
-                        {{ $med->stock_quantity }}
-                    </span>
-                    <span class="text-xs text-gray-400"> / {{ $med->reorder_level }} reorder</span>
-                    @if($med->isLowStock())
-                    <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded font-medium">Low</span>
-                    @endif
-                </td>
-                <td class="px-5 py-3 text-gray-600">
-                    {{ $med->expiry_date->format('M d, Y') }}
-                    @if($med->isExpired())
-                    <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded font-medium">Expired</span>
-                    @elseif($med->isNearExpiry())
-                    <span class="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-600 text-xs rounded font-medium">Soon</span>
-                    @endif
-                </td>
-                <td class="px-5 py-3">
-                    <div class="flex items-center justify-center gap-2">
-                        <a href="{{ route('medicines.show', $med) }}"
-                            class="px-3 py-1.5 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors">View</a>
-                        <a href="{{ route('medicines.edit', $med) }}"
-                            class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">Edit</a>
-                        @if(auth()->user()->isAdmin())
-                        <button type="button"
-                            data-delete-url="{{ route('medicines.destroy', $med) }}"
-                            data-delete-msg="Remove {{ $med->name }} from inventory?"
-                            class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">Delete</button>
+<!-- Medicines Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 60px;">ID</th>
+                    <th scope="col">Medicine Name &amp; Generic</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Dosage Form</th>
+                    <th scope="col">Stock Quantity</th>
+                    <th scope="col">Expiry Date</th>
+                    <th scope="col" class="text-center" style="width: 200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($medicines as $med)
+                <tr class="{{ $med->isExpired() ? 'table-danger' : ($med->isNearExpiry() ? 'table-warning' : '') }}">
+                    <td class="text-muted fw-bold">#{{ $med->id }}</td>
+                    <td>
+                        <a href="{{ route('medicines.show', $med) }}" class="fw-semibold text-dark text-decoration-none">
+                            {{ $med->name }}
+                        </a>
+                        <div class="text-muted small"><i class="bi bi-tag me-1"></i>{{ $med->generic_name }}</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border">{{ $med->category }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary text-capitalize">{{ $med->dosage_form }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-bold fs-6 {{ $med->isLowStock() ? 'text-danger' : 'text-dark' }}">
+                            {{ $med->stock_quantity }}
+                        </span>
+                        <small class="text-muted">/ {{ $med->reorder_level }} reorder</small>
+                        @if($med->isLowStock())
+                            <span class="badge bg-danger ms-1">Low Stock</span>
                         @endif
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="6" class="px-5 py-12 text-center text-gray-400">No medicines found.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+                    </td>
+                    <td>
+                        <div>{{ $med->expiry_date->format('M d, Y') }}</div>
+                        @if($med->isExpired())
+                            <span class="badge bg-danger">EXPIRED</span>
+                        @elseif($med->isNearExpiry())
+                            <span class="badge bg-warning text-dark">Expiring Soon</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ route('medicines.show', $med) }}" class="btn btn-outline-info" title="View Medicine">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ route('medicines.edit', $med) }}" class="btn btn-outline-primary" title="Edit Medicine">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            @if(auth()->user()->isAdmin())
+                            <button type="button" class="btn btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#deleteConfirmModal"
+                                data-delete-url="{{ route('medicines.destroy', $med) }}"
+                                data-delete-msg="Are you sure you want to remove {{ $med->name }} from pharmacy inventory?"
+                                title="Delete Medicine">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-capsule fs-1 d-block mb-2 text-secondary"></i>
+                        No medicines found in the pharmacy catalog{{ $search ? ' matching "' . $search . '"' : '' }}.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
     @if($medicines->hasPages())
-    <div class="px-5 py-4 border-t border-gray-100">{{ $medicines->links() }}</div>
+    <div class="card-footer bg-white border-top-0 py-3 d-flex justify-content-center">
+        {{ $medicines->links() }}
+    </div>
     @endif
 </div>
 

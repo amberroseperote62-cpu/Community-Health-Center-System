@@ -29,7 +29,7 @@ class StoreAppointmentRequest extends FormRequest
                 Rule::unique('appointments')->where(function ($query) {
                     return $query
                         ->where('health_worker_id', $this->health_worker_id)
-                        ->where('appointment_date', $this->appointment_date);
+                        ->whereDate('appointment_date', $this->appointment_date);
                 }),
             ],
         ];

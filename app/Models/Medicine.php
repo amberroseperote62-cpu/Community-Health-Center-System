@@ -56,12 +56,10 @@ class Medicine extends Model
     }
 
     /**
-     * A medicine can be prescribed in many consultations (many-to-many).
+     * A medicine can be prescribed across consultations.
      */
-    public function consultations(): BelongsToMany
+    public function consultations(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->belongsToMany(Consultation::class, 'consultation_medicine')
-            ->withPivot('quantity', 'dosage_instructions')
-            ->withTimestamps();
+        return $this->hasMany(Consultation::class);
     }
 }

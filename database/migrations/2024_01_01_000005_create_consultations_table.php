@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * Creates the consultations table for medical visit records.
+     * Creates the consultations table for medical visit records and prescribed medication.
      */
     public function up(): void
     {
@@ -18,6 +18,10 @@ return new class extends Migration
             $table->foreignId('appointment_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('patient_id')->constrained()->onDelete('cascade');
             $table->foreignId('health_worker_id')->constrained()->onDelete('cascade');
+            // Prescribed medicine from inventory (optional, direct relationship among the 5 topic tables)
+            $table->foreignId('medicine_id')->nullable()->constrained()->onDelete('set null');
+            $table->integer('prescribed_quantity')->nullable();
+            $table->string('dosage_instructions')->nullable();
             $table->date('consultation_date');
             $table->text('symptoms');
             $table->text('diagnosis');
