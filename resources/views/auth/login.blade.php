@@ -34,13 +34,13 @@
             <div class="d-flex justify-content-between align-items-center">
                 <label for="password" class="form-label fw-semibold small mb-0">Password</label>
                 @if (Route::has('password.request'))
-                    <a class="small text-decoration-none text-muted" href="{{ route('password.request') }}">
+                    <a class="small text-decoration-none fw-semibold" href="{{ route('password.request') }}" style="color: #0f766e;">
                         Forgot password?
                     </a>
                 @endif
             </div>
             <div class="input-group mt-1">
-                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                <span class="input-group-text bg-light text-secondary"><i class="bi bi-lock"></i></span>
                 <input id="password" class="form-control @error('password') is-invalid @enderror" type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
                 @error('password')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -51,20 +51,20 @@
         <!-- Remember Me -->
         <div class="mb-3 form-check">
             <input id="remember_me" type="checkbox" class="form-check-input" name="remember">
-            <label for="remember_me" class="form-check-label small text-muted">Remember me</label>
+            <label for="remember_me" class="form-check-label small text-secondary">Remember me</label>
         </div>
 
         <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-chc btn-lg fw-semibold fs-6">
-                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+            <button type="submit" class="btn btn-chc btn-lg fw-semibold fs-6 shadow-sm">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Sign In
             </button>
         </div>
 
         @if (Route::has('register'))
             <div class="text-center small text-muted">
                 Don't have an account?
-                <a href="{{ route('register') }}" class="text-decoration-none fw-semibold" style="color: #0f766e;">
-                    Register here
+                <a href="{{ route('register') }}" class="text-decoration-none fw-bold ms-1" style="color: #0f766e;">
+                    Register here <i class="bi bi-arrow-right-short"></i>
                 </a>
             </div>
         @endif

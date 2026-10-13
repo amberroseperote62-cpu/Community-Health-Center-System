@@ -100,13 +100,40 @@
         .btn-chc-primary {
             background-color: var(--chc-primary);
             border-color: var(--chc-primary);
-            color: #ffffff;
+            color: #ffffff !important;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+            transition: all 0.2s ease-in-out;
         }
 
-        .btn-chc-primary:hover {
-            background-color: var(--chc-primary-dark);
-            border-color: var(--chc-primary-dark);
-            color: #ffffff;
+        .btn-chc-primary:hover, .btn-chc-primary:focus, .btn-chc-primary:active {
+            background-color: var(--chc-primary-dark) !important;
+            border-color: var(--chc-primary-dark) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-chc-danger {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: #ffffff !important;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-chc-danger:hover, .btn-chc-danger:focus, .btn-chc-danger:active {
+            background-color: #b91c1c !important;
+            border-color: #b91c1c !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--chc-primary);
+            box-shadow: 0 0 0 0.25rem rgba(15, 118, 110, 0.2);
         }
 
         .table th {

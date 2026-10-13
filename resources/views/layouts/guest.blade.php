@@ -47,12 +47,22 @@
         .btn-chc {
             background-color: #0f766e;
             border-color: #0f766e;
-            color: white;
+            color: #ffffff !important;
+            font-weight: 600;
+            padding: 0.65rem 1.25rem;
+            box-shadow: 0 4px 10px rgba(15, 118, 110, 0.25);
+            transition: all 0.2s ease-in-out;
         }
-        .btn-chc:hover {
-            background-color: #115e59;
-            border-color: #115e59;
-            color: white;
+        .btn-chc:hover, .btn-chc:focus, .btn-chc:active {
+            background-color: #115e59 !important;
+            border-color: #115e59 !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 14px rgba(15, 118, 110, 0.35);
+            transform: translateY(-1px);
+        }
+        .form-control:focus {
+            border-color: #0f766e;
+            box-shadow: 0 0 0 0.25rem rgba(15, 118, 110, 0.2);
         }
     </style>
 </head>
